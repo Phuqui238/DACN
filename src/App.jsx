@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MasterLayout from './components/layout/MasterLayout'; // Nhớ import MasterLayout (sửa lại đường dẫn nếu file nằm khác thư mục)
 import DashboardScreen from './screens/DashboardScreen';
 import ProductScreen from './screens/ProductScreen';
+import TransferScreen from './screens/TransferScreen';
 import InOutScreen from './screens/InOutScreen';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardScreen />} />
           <Route path="products" element={<ProductScreen />} />
+          <Route path="transfers" element={<TransferScreen />}/>
           <Route path="in-out" element={<InOutScreen />} />
 
         </Route>
