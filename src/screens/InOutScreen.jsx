@@ -1,192 +1,117 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function InOutScreen() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState("in");
+  const [localData, setLocalData] = useState([]);
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("All");
+  
+  const today = new Date().toISOString().split('T')[0];
+  const [startDate, setStartDate] = useState("2000-01-01");
+  const [endDate, setEndDate] = useState(today);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  const data = [
-    {
-      id: "RE-2023-001",
-      date: "Oct 24, 2023",
-      creator: "Michael Scott",
-      warehouse: "Main Warehouse",
-      items: 45,
-      total: 12450,
-      status: "Completed",
-      type: "in",
-    },
-    {
-      id: "RE-2023-002",
-      date: "Oct 25, 2023",
-      creator: "Jim Halpert",
-      warehouse: "Secondary DC",
-      items: 112,
-      total: 4200,
-      status: "Pending",
-      type: "out",
-    },
-    {
-      id: "RE-2023-003",
-      date: "Oct 26, 2023",
-      creator: "Pam Beesly",
-      warehouse: "Main Warehouse",
-      items: 8,
-      total: 850,
-      status: "Draft",
-      type: "in",
-    },
-  ];
+  useEffect(() => {
+    const storageKey = tab === "in" ? "inbound_data" : "outbound_data";
+    const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    const mock = [
+      { id: "RE-2023-001", date: "2023-10-24", creator: "Michael Scott", avatar: "MS", warehouse: "Main WH", items: 45, total: 12450, status: "COMPLETED", type: "in" },
+      { id: "RE-2023-002", date: "2023-10-25", creator: "Jim Halpert", avatar: "JH", warehouse: "DC 02", items: 112, total: 4200, status: "PENDING", type: "out" }
+    ];
+    setLocalData([...saved, ...mock.filter(m => m.type === tab)]);
+    setCurrentPage(1); 
+  }, [tab]);
 
-  // FILTER
-  const filteredData = data.filter((item) => {
-    return (
-      item.type === tab &&
-      item.id.toLowerCase().includes(search.toLowerCase()) &&
-      (status === "All" || item.status === status)
-    );
-  });
-
-  const statusStyle = (status) => {
-    switch (status) {
-      case "Completed":
-        return "bg-green-100 text-green-700";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "Draft":
-        return "bg-gray-100 text-gray-500";
-      default:
-        return "";
-    }
+  const handleDelete = (id) => {
+    if (!window.confirm("Delete?")) return;
+    const key = tab === "in" ? "inbound_data" : "outbound_data";
+    const updated = localData.filter(i => i.id !== id);
+    setLocalData(updated);
+    localStorage.setItem(key, JSON.stringify(updated.filter(i => !i.id.includes("RE-2023"))));
   };
 
-  return (
-    <div>
-      {/* HEADER */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex bg-white rounded-lg p-1 shadow-sm border">
-          <button
-            onClick={() => setTab("in")}
-            className={`px-6 py-2 rounded-md font-bold flex items-center gap-2 ${
-              tab === "in"
-                ? "bg-[#1E56A0] text-white"
-                : "text-gray-500 hover:bg-gray-100"
-            }`}
-          >
-            <span className="material-symbols-outlined">call_received</span>
-            Inbound
-          </button>
+  const filteredData = localData.filter(item => {
+    const matchesSearch = item.id.toLowerCase().includes(search.toLowerCase());
+    const matchesDate = item.date >= startDate && item.date <= endDate;
+    return matchesSearch && matchesDate;
+  });
 
-          <button
-            onClick={() => setTab("out")}
-            className={`px-6 py-2 rounded-md font-bold flex items-center gap-2 ${
-              tab === "out"
-                ? "bg-[#1E56A0] text-white"
-                : "text-gray-500 hover:bg-gray-100"
-            }`}
-          >
-            <span className="material-symbols-outlined">call_made</span>
-            Outbound
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const currentTableData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  return (
+    <div className="space-y-6 pb-10 font-inter">
+      <div className="flex justify-between items-center">
+        <div className="flex bg-white rounded-xl p-1 shadow-sm border border-slate-100">
+          <button onClick={() => setTab("in")} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${tab === "in" ? "bg-[#1E56A0] text-white shadow-md" : "text-slate-500 hover:bg-slate-50"}`}>
+            <span className="material-symbols-outlined text-[20px]">input</span> Inbound
+          </button>
+          <button onClick={() => setTab("out")} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${tab === "out" ? "bg-[#1E56A0] text-white shadow-md" : "text-slate-500 hover:bg-slate-50"}`}>
+            <span className="material-symbols-outlined text-[20px]">outbound</span> Outbound
           </button>
         </div>
+      </div>
 
-        <button className="bg-[#1E56A0] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
-          <span className="material-symbols-outlined">add</span>
-          Create Receipt
+      <div className="bg-white p-3 rounded-xl shadow-sm border flex items-center gap-3">
+        <div className="flex-1 flex items-center gap-3">
+            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 gap-2">
+                <span className="material-symbols-outlined text-slate-400 text-[18px]">calendar_month</span>
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-transparent border-none text-[12px] font-bold text-slate-600 outline-none p-0 w-[115px] focus:ring-0" />
+                <span className="text-slate-300 text-[10px] font-black uppercase">To</span>
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-transparent border-none text-[12px] font-bold text-slate-600 outline-none p-0 w-[115px] focus:ring-0" />
+            </div>
+            <div className="relative flex-1">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+                <input placeholder="Search Receipt ID..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-[13px] outline-none font-medium" />
+            </div>
+        </div>
+        <button onClick={() => navigate(tab === "in" ? "/in-out/create-inbound" : "/in-out/create")} className="bg-[#1E56A0] text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 shadow-md">
+          <span className="material-symbols-outlined">add</span> Create New Receipt
         </button>
       </div>
 
-      {/* FILTER */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border mb-6 flex flex-wrap gap-4">
-        <input
-          placeholder="Search Receipt ID..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border px-3 py-2 rounded-lg"
-        />
-
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="border px-3 py-2 rounded-lg"
-        >
-          <option>All</option>
-          <option>Completed</option>
-          <option>Pending</option>
-          <option>Draft</option>
-        </select>
-      </div>
-
-      {/* TABLE */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="px-6 py-4">Receipt ID</th>
-              <th>Date</th>
-              <th>Creator</th>
-              <th>Warehouse</th>
-              <th className="text-center">Items</th>
-              <th className="text-right">Total</th>
-              <th>Status</th>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <table className="w-full text-left text-[13px]">
+          <thead className="bg-slate-50/50 border-b border-slate-100">
+            <tr className="text-slate-400 font-bold uppercase text-[11px] tracking-wider tracking-tighter">
+              <th className="px-6 py-4">Receipt ID</th><th>Date</th><th>Creator</th><th className="text-center">Items</th><th className="text-right">Total</th><th className="text-center">Status</th><th className="px-6 text-center">Actions</th>
             </tr>
           </thead>
-
-          <tbody>
-            {filteredData.map((row) => (
-              <tr key={row.id} className="border-t hover:bg-gray-50">
-                <td className="px-6 py-4 text-[#1E56A0] font-bold">
-                  {row.id}
-                </td>
-                <td>{row.date}</td>
-                <td>{row.creator}</td>
-                <td>{row.warehouse}</td>
-                <td className="text-center">{row.items}</td>
-                <td className="text-right font-bold">
-                  ${row.total.toLocaleString()}
-                </td>
+          <tbody className="divide-y divide-slate-50">
+            {currentTableData.map((row) => (
+              <tr key={row.id} className="hover:bg-blue-50/20">
+                <td className="px-6 py-5 font-bold text-[#1E56A0]">{row.id}</td>
+                <td className="text-slate-600 font-bold">{row.date}</td>
                 <td>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-bold ${statusStyle(
-                      row.status
-                    )}`}
-                  >
-                    {row.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 text-[#1E56A0] flex items-center justify-center text-[10px] font-black">{row.avatar || "U"}</div>
+                    <span className="font-semibold text-slate-700">{row.creator}</span>
+                  </div>
+                </td>
+                <td className="text-center font-bold text-slate-700">{row.items}<br/><span className="text-[10px] text-slate-400 uppercase font-black">units</span></td>
+                <td className="text-right font-black text-slate-800 tracking-tight">${row.total.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td className="text-center">
+                  <span className={`px-3 py-1 rounded-full text-[9px] font-black border tracking-wider ${row.status === 'COMPLETED' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-blue-50 text-blue-500 border-blue-100 italic'}`}>{row.status}</span>
+                </td>
+                <td className="px-6 text-center">
+                  <div className="flex justify-center gap-3 text-slate-300">
+                    <button className="material-symbols-outlined text-[18px] hover:text-[#1E56A0]">visibility</button>
+                    <button onClick={() => handleDelete(row.id)} className="material-symbols-outlined text-[18px] hover:text-red-500">delete</button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-
-        {/* EMPTY */}
-        {filteredData.length === 0 && (
-          <div className="p-6 text-center text-gray-500">
-            No data found
+        <div className="p-4 border-t border-slate-50 flex justify-between items-center bg-slate-50/20">
+          <p className="text-[11px] text-slate-400 font-bold">Showing {currentTableData.length} entries</p>
+          <div className="flex gap-1">
+             {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+               <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 flex items-center justify-center rounded text-xs font-bold ${currentPage === page ? "bg-[#1E56A0] text-white shadow-md" : "hover:bg-slate-200 text-slate-500"}`}>{page}</button>
+             ))}
           </div>
-        )}
-      </div>
-
-      {/* SUMMARY */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <p className="text-gray-500 text-sm">Inbound Today</p>
-          <h2 className="text-xl font-bold">42</h2>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <p className="text-gray-500 text-sm">Pending</p>
-          <h2 className="text-xl font-bold">15</h2>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <p className="text-gray-500 text-sm">Items</p>
-          <h2 className="text-xl font-bold">1,240</h2>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <p className="text-gray-500 text-sm">Total Value</p>
-          <h2 className="text-xl font-bold">$142k</h2>
         </div>
       </div>
     </div>
