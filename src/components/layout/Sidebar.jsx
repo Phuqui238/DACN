@@ -5,7 +5,7 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { name: 'Dashboard', icon: 'dashboard', path: '/' },
+    { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
     { name: 'Products', icon: 'inventory_2', path: '/products' },
     { name: 'In/Out', icon: 'swap_vertical_circle', path: '/in-out' },
     { name: 'Transfers', icon: 'compare_arrows', path: '/transfers' },
