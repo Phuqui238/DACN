@@ -43,21 +43,30 @@ const Sidebar = () => {
 
       {/* Profile Section */}
       <div className="mt-auto px-2 pt-4 border-t border-blue-800">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-blue-400 overflow-hidden">
-            <img 
-              alt="Profile" 
-              className="w-full h-full object-cover" 
-              src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop" 
-            />
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <p className="text-white text-xs font-bold truncate">Alex Sterling</p>
-            <p className="text-blue-100/50 text-[10px] truncate">Admin Access</p>
-          </div>
-          <span className="material-symbols-outlined text-white/50 text-sm cursor-pointer hover:text-white">logout</span>
-        </div>
-      </div>
+  {/* Thêm thẻ Link bọc quanh Avatar và thông tin User */}
+  <Link 
+    to="/profile" 
+    className="flex items-center gap-3 hover:bg-white/5 p-2 rounded-lg transition-colors group"
+  >
+    <div className="w-8 h-8 rounded-full bg-blue-400 overflow-hidden ring-2 ring-transparent group-hover:ring-white/30 transition-all">
+      <img 
+        alt="Profile" 
+        className="w-full h-full object-cover" 
+        src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop" 
+      />
+    </div>
+    <div className="flex-1 overflow-hidden">
+      <p className="text-white text-xs font-bold truncate">Alex Sterling</p>
+      <p className="text-blue-100/50 text-[10px] truncate">Admin Access</p>
+    </div>
+    {/* Nút logout để bên ngoài Link hoặc xử lý riêng nếu muốn */}
+  </Link>
+  
+  {/* Nếu muốn icon logout vẫn nằm trong hàng nhưng không bị dính vào link Profile */}
+  <div className="absolute right-4 bottom-7">
+     <span className="material-symbols-outlined text-white/50 text-sm cursor-pointer hover:text-white">logout</span>
+  </div>
+</div>
     </aside>
   );
 };

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import TransferTable from '../components/transfers/TransferTable';
 import TransferDetailPanel from '../components/transfers/TransferDetailPanel';
+import { useNavigate } from 'react-router-dom';
 
 const TransferScreen = () => {
-  // Mock data - Sau này bạn sẽ fetch từ API
+  const navigate = useNavigate();
+
   const mockTransfers = [
     { 
       id: 'TRF-102', date: 'Oct 14, 09:45 AM', from: 'WH-Alpha', to: 'WH-Beta', 
@@ -30,7 +32,10 @@ const TransferScreen = () => {
     <>
       <div className="px-6 py-4 flex items-center justify-between gap-4">
         <h2 className="text-xl font-bold text-slate-800 font-headline-md">Quản lý Điều Chuyển</h2>
-        <button className="bg-[#1E56A0] text-white px-4 py-2 rounded font-semibold flex items-center gap-2 hover:opacity-90 transition-all shadow-md">
+        <button 
+          onClick={() => navigate('/transfers/create')} 
+          className="bg-[#1E56A0] text-white px-4 py-2 rounded font-semibold flex items-center gap-2 hover:opacity-90 transition-all shadow-md"
+        >
           <span className="material-symbols-outlined text-sm">add</span>
           Tạo đơn mới
         </button>
