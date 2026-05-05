@@ -4,6 +4,7 @@ import MasterLayout from './components/layout/MasterLayout'; // Nhớ import Mas
 import DashboardScreen from './screens/DashboardScreen';
 import ProductScreen from './screens/ProductScreen';
 import TransferScreen from './screens/TransferScreen';
+import InOutScreen from './screens/InOutScreen';
 
 function App() {
   return (
@@ -17,6 +18,8 @@ function App() {
           <Route path="dashboard" element={<DashboardScreen />} />
           <Route path="products" element={<ProductScreen />} />
           <Route path="transfers" element={<TransferScreen />}/>
+          <Route path="in-out" element={<InOutScreen />} />
+
         </Route>
       </Routes>
     </BrowserRouter>
